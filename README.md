@@ -12,6 +12,8 @@ Built to the 21-part specification in [`docs/`](docs/).
 
 ## Live demo
 
+**<https://ukiaf11.github.io/Hotel-Web/>**
+
 The published SPA runs against a **built-in demo backend**: a complete in-browser
 implementation of the same REST API, seeded with six hotels, menus, order history, staff and
 support tickets, and persisted in `localStorage`. Nothing is shared between visitors, so you can

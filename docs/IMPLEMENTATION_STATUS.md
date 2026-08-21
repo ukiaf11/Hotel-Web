@@ -64,7 +64,7 @@ Everything below has since been built and verified.
 ## Phase 6 — Ship
 - [x] Multi-stage `Dockerfile`, `entrypoint.sh`, `docker-compose.yml`, `render.yaml`
 - [x] GitHub Actions CI — backend tests, migration check, deploy check, frontend lint/build, Docker build
-- [x] `vercel.json`, production build, deployed live
+- [x] `vercel.json`, production build, deployed live to <https://ukiaf11.github.io/Hotel-Web/>
 
 ## Verification performed
 
