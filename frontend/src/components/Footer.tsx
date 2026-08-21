@@ -19,7 +19,7 @@ export function Footer() {
         setToken(null)
         localStorage.removeItem('hotelweb.user')
         localStorage.removeItem('hotelweb.cart')
-        window.location.href = '/'
+        window.location.href = import.meta.env.BASE_URL
       },
     })
 

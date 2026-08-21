@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { Layout } from './components/Layout'
@@ -148,9 +148,9 @@ export default function App() {
                   title="404 — page not found"
                   body="The page you were looking for does not exist or has moved."
                   action={
-                    <a className="btn btn-primary" href="/">
+                    <Link className="btn btn-primary" to="/">
                       Back to home feed
-                    </a>
+                    </Link>
                   }
                 />
               </div>
