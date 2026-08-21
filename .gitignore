@@ -262,3 +262,8 @@ cython_debug/
 # OS Specific
 .DS_Store
 Thumbs.db
+
+# Project-specific
+staticfiles/
+backend/staticfiles/
+backend/media/

@@ -1,0 +1,33 @@
+# One-click deploy of the Django API on Render's free tier.
+# The SPA is deployed separately (Vercel) and points at this service via VITE_API_URL.
+services:
+  - type: web
+    name: hotel-web-api
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/v1/health/
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: 'false'
+      - key: DJANGO_ALLOWED_HOSTS
+        value: '.onrender.com'
+      - key: CORS_ALLOW_ALL_ORIGINS
+        value: 'true'
+      - key: SEED_DEMO_DATA
+        value: 'true'
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hotel-web-db
+          property: connectionString
+
+databases:
+  - name: hotel-web-db
+    plan: free
+    databaseName: hotel_db
+    user: hotel

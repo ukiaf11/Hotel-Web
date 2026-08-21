@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Django API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Sync dependencies
+        run: uv sync --frozen
+      - name: Check for missing migrations
+        run: uv run python manage.py makemigrations --check --dry-run
+      - name: Django system checks
+        run: uv run python manage.py check --deploy --fail-level ERROR
+        env:
+          DJANGO_DEBUG: 'false'
+          DJANGO_SECRET_KEY: ci-secret-key-not-used-in-production
+          DJANGO_ALLOWED_HOSTS: localhost
+      - name: Run tests
+        run: uv run python manage.py test
+
+  frontend:
+    name: React SPA
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Type-check and build
+        run: npm run build
+
+  docker:
+    name: Backend image builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build production image
+        run: docker build -t hotel-web-api:ci ./backend

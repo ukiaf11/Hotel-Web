@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: hotel_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+
+  web:
+    build: ./backend
+    ports:
+      - '8000:8000'
+    environment:
+      DATABASE_URL: postgres://postgres:secret@db:5432/hotel_db
+      REDIS_URL: redis://redis:6379/0
+      DJANGO_DEBUG: 'false'
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,web
+      SECURE_SSL_REDIRECT: 'false'
+      CORS_ALLOWED_ORIGINS: http://localhost:5173,http://localhost:4173
+      SEED_DEMO_DATA: 'true'
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  celery_worker:
+    build: ./backend
+    command: celery -A config worker --loglevel=info
+    entrypoint: []
+    environment:
+      DATABASE_URL: postgres://postgres:secret@db:5432/hotel_db
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  postgres_data:
