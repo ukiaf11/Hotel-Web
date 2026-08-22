@@ -1,0 +1,25 @@
+{% autoescape off %}ORDER #{{ order.id }} CONFIRMED
+==================================================
+
+Thanks {{ buyer.name }} - {{ hotel.name }} has received your order and will
+confirm it shortly.
+
+Scheduled:   {{ order.scheduled_date|date:"D j M Y" }} at {{ order.scheduled_slot }}
+Fulfilment:  {{ fulfilment }}
+{% if is_delivery %}Delivering to: {{ order.address }}{% else %}Collect from:  {{ hotel.place }}{% endif %}
+
+YOUR ORDER
+--------------------------------------------------
+{% for item in items %}{{ item.quantity }} x {{ item.name }} - {{ currency }}{{ item.line_total|floatformat:2 }}
+{% endfor %}
+Subtotal:      {{ currency }}{{ order.subtotal|floatformat:2 }}
+Delivery fee:  {{ currency }}{{ order.delivery_fee|floatformat:2 }}
+Tax:           {{ currency }}{{ order.tax_amount|floatformat:2 }}
+TOTAL:         {{ currency }}{{ order.total_amount|floatformat:2 }}
+
+PAYMENT: offline only. {% if is_delivery %}Please have exact change ready for the courier.{% else %}Please pay at the counter when you collect.{% endif %}
+
+Track your order:  {{ track_url }}
+Hotel:             {{ hotel.name }}, {{ hotel.contact_number|default:"no phone on file" }}
+{% if hotel_map_url %}Directions:        {{ hotel_map_url }}{% endif %}
+{% endautoescape %}

@@ -12,6 +12,7 @@ from apps.authentication.schemas import MessageOut
 from apps.console.models import SiteConfig
 from apps.hotels.models import Hotel
 from apps.menu.models import FoodItem
+from apps.notifications.email import dispatch_order_emails
 from apps.notifications.services import notify
 
 from .models import Order, OrderItem, Review
@@ -145,6 +146,10 @@ def create_order(request, payload: OrderCreateIn):
         kind="order",
         link=f"/orders/track/{order.id}",
     )
+    # Kitchen ticket to the distributor plus a confirmation to the buyer. Queued on
+    # commit and best-effort, so a mail outage can never fail the order.
+    dispatch_order_emails(order)
+
     return {
         "success": True,
         "order_id": order.id,

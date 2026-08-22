@@ -1,0 +1,56 @@
+{% extends "email/_base.html" %}
+
+{% block title %}New order #{{ order.id }}{% endblock %}
+{% block header_tag %}New order{% endblock %}
+{% block preheader %}{{ item_count }} item(s) for {{ order.scheduled_slot }} — {{ buyer.name }}{% endblock %}
+
+{% block content %}
+  <h1 style="margin:0 0 4px;font-size:21px;">New order #{{ order.id }}</h1>
+  <p style="margin:0 0 18px;color:#7b8296;font-size:14px;">
+    {{ item_count }} item{{ item_count|pluralize }} for {{ hotel.name }}, placed {{ placed_at|date:"j M Y, g:i A" }}.
+  </p>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fdf4e9;border-radius:10px;margin-bottom:20px;">
+    <tr>
+      <td style="padding:14px 16px;font-size:14px;line-height:1.7;">
+        <strong style="display:block;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:#a86a1b;margin-bottom:5px;">Scheduled</strong>
+        {{ order.scheduled_date|date:"l j F Y" }} &middot; {{ order.scheduled_slot }}<br />
+        <strong>{{ fulfilment }}</strong>
+      </td>
+    </tr>
+  </table>
+
+  <h2 style="margin:0 0 8px;font-size:15px;">Customer</h2>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;font-size:14px;line-height:1.7;">
+    <tr><td width="82" style="color:#7b8296;">Name</td><td><strong>{{ buyer.name }}</strong></td></tr>
+    <tr><td style="color:#7b8296;">Phone</td><td>
+      {% if buyer.phone_number %}<a href="tel:{{ buyer.phone_number }}" style="color:#c9761a;text-decoration:none;">{{ buyer.phone_number }}</a>{% else %}<span style="color:#9aa1b2;">not provided</span>{% endif %}
+    </td></tr>
+    <tr><td style="color:#7b8296;">Email</td><td><a href="mailto:{{ buyer.email }}" style="color:#c9761a;text-decoration:none;">{{ buyer.email }}</a></td></tr>
+    {% if is_delivery %}
+    <tr><td style="color:#7b8296;vertical-align:top;">Address</td><td>{{ order.address|linebreaksbr }}
+      {% if customer_map_url %}<br /><a href="{{ customer_map_url }}" style="color:#c9761a;text-decoration:none;">Open in Google Maps &rarr;</a>{% endif %}
+    </td></tr>
+    {% else %}
+    <tr><td style="color:#7b8296;">Pickup</td><td>Customer collects at the counter.</td></tr>
+    {% endif %}
+  </table>
+
+  <h2 style="margin:0 0 4px;font-size:15px;">Food list</h2>
+  {% include "email/_items.html" %}
+
+  {% if order.special_instructions %}
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fff8e6;border-left:3px solid #e0a03a;border-radius:6px;margin-top:20px;">
+    <tr><td style="padding:12px 14px;font-size:13px;line-height:1.6;">
+      <strong style="display:block;margin-bottom:3px;">Customer note</strong>{{ order.special_instructions }}
+    </td></tr>
+  </table>
+  {% endif %}
+
+  <p style="margin:26px 0 0;">
+    <a href="{{ queue_url }}" style="display:inline-block;background:#e8890f;color:#ffffff;font-weight:600;font-size:14px;text-decoration:none;padding:12px 24px;border-radius:9px;">Open the order queue</a>
+  </p>
+  <p style="margin:12px 0 0;color:#7b8296;font-size:12px;">Payment is collected offline — {{ currency }}{{ order.total_amount|floatformat:2 }} on {% if is_delivery %}delivery{% else %}collection{% endif %}.</p>
+{% endblock %}
+
+{% block footer %}You are receiving this because you own {{ hotel.name }} on Hotel Express.{% endblock %}

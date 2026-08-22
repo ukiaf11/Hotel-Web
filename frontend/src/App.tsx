@@ -20,6 +20,7 @@ const CheckoutPage = lazy(() => import('./features/customer/CheckoutPage').then(
 const TrackOrderPage = lazy(() => import('./features/customer/TrackOrderPage').then((m) => ({ default: m.TrackOrderPage })))
 const OrderHistoryPage = lazy(() => import('./features/customer/OrderHistoryPage').then((m) => ({ default: m.OrderHistoryPage })))
 const ProfilePage = lazy(() => import('./features/customer/ProfilePage').then((m) => ({ default: m.ProfilePage })))
+const OutboxPage = lazy(() => import('./features/customer/OutboxPage').then((m) => ({ default: m.OutboxPage })))
 const HelpPage = lazy(() => import('./features/support/HelpPage').then((m) => ({ default: m.HelpPage })))
 
 // Distributor workspace
@@ -108,6 +109,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/outbox"
+            element={
+              <ProtectedRoute>
+                <OutboxPage />
               </ProtectedRoute>
             }
           />

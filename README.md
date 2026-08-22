@@ -46,6 +46,27 @@ are no chart, icon or PDF dependencies in the frontend bundle.
 
 ---
 
+## Order notification email
+
+Placing an order sends two messages immediately: a **kitchen ticket to the distributor**
+(full food list plus the customer's name, phone, email and delivery address) and a
+**confirmation to the customer**. Both have HTML and plain-text parts.
+
+| Runtime | How it sends |
+|---|---|
+| Django backend | `EmailMultiAlternatives` over SMTP, queued on Celery, scheduled on transaction commit. With no `EMAIL_HOST` set it falls back to the console backend, so it works in development with no credentials. |
+| Demo backend (the published site) | A browser cannot speak SMTP, so the same two messages are composed and sent through **EmailJS** when `VITE_EMAILJS_*` is configured; otherwise each one is recorded in the in-app outbox at **`/outbox`** so the behaviour stays visible and inspectable. |
+
+Sending is best-effort on both sides — a mail outage is logged and swallowed, never
+allowed to fail an order that has already been placed.
+
+Configure it with `EMAIL_HOST` and friends in [`backend/.env.example`](backend/.env.example)
+(Gmail app password, Brevo and Resend are all documented there) or `VITE_EMAILJS_*` in
+[`frontend/.env.example`](frontend/.env.example). Toggles: `ORDER_EMAILS_ENABLED`,
+`ORDER_EMAIL_TO_DISTRIBUTOR`, `ORDER_EMAIL_TO_CUSTOMER`.
+
+---
+
 ## Repository layout
 
 ```
@@ -57,10 +78,11 @@ Hotel-Web/
 │   │   ├── hotels/          hotel profile, public feed, logistics, delivery slots
 │   │   ├── menu/            categories and food items
 │   │   ├── orders/          orders, order items, reviews, queue, analytics, invoices
-│   │   ├── notifications/   notification feed
+│   │   ├── notifications/   notification feed, order email + Celery task
 │   │   ├── support/         FAQs and support tickets
 │   │   └── console/         admin console + global site configuration
-│   └── tests/               33 integration tests
+│   ├── templates/email/     HTML + text order email templates
+│   └── tests/               45 integration tests
 ├── frontend/                React SPA
 │   └── src/
 │       ├── components/      shared UI primitives, header/footer, charts, map picker

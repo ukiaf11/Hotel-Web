@@ -142,6 +142,35 @@ CELERY_BROKER_URL = env("REDIS_URL", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_TASK_ALWAYS_EAGER = env_bool("CELERY_TASK_ALWAYS_EAGER", not bool(env("REDIS_URL")))
 
+# --- Email ------------------------------------------------------------------
+# Everything is environment driven. With no EMAIL_HOST set the console backend is
+# used, so the feature is always exercised in development without credentials.
+EMAIL_HOST = env("EMAIL_HOST")
+EMAIL_PORT = int(env("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", False)
+EMAIL_TIMEOUT = int(env("EMAIL_TIMEOUT", "15"))
+EMAIL_SUBJECT_PREFIX = env("EMAIL_SUBJECT_PREFIX", "")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "Hotel Express <no-reply@hotelexpress.dev>")
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+EMAIL_BACKEND = env(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.smtp.EmailBackend"
+    if EMAIL_HOST
+    else "django.core.mail.backends.console.EmailBackend",
+)
+#: Only used by the file backend, handy for inspecting rendered mail locally.
+EMAIL_FILE_PATH = env("EMAIL_FILE_PATH", str(BASE_DIR / "sent_emails"))
+
+ORDER_EMAILS_ENABLED = env_bool("ORDER_EMAILS_ENABLED", True)
+ORDER_EMAIL_TO_DISTRIBUTOR = env_bool("ORDER_EMAIL_TO_DISTRIBUTOR", True)
+ORDER_EMAIL_TO_CUSTOMER = env_bool("ORDER_EMAIL_TO_CUSTOMER", True)
+#: Used to build absolute links inside emails.
+FRONTEND_URL = env("FRONTEND_URL", "https://ukiaf11.github.io/Hotel-Web").rstrip("/")
+
 # --- Platform defaults ------------------------------------------------------
 PLATFORM_TAX_RATE = float(env("PLATFORM_TAX_RATE", "0.05"))
 SLOT_MINUTES = 30

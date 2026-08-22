@@ -125,6 +125,20 @@ export interface DemoTicket {
   responses: { sender: string; message: string; timestamp: string }[]
 }
 
+export interface OutboxMessage {
+  id: number
+  orderId: number
+  kind: 'distributor' | 'customer'
+  to: string
+  toName: string
+  replyTo: string
+  subject: string
+  body: string
+  status: 'sent' | 'recorded' | 'failed'
+  provider: 'emailjs' | 'demo-outbox'
+  created_at: string
+}
+
 export interface DemoReview {
   id: number
   orderId: number
@@ -147,6 +161,7 @@ export interface DemoDb {
   notifications: DemoNotification[]
   faqs: { id: number; question: string; answer: string; category: string }[]
   tickets: DemoTicket[]
+  outbox: OutboxMessage[]
   config: { maintenance_mode: boolean; maintenance_message: string; allow_registrations: boolean }
   sessions: Record<string, number>
 }
@@ -181,6 +196,14 @@ export const priceLines = (
   }
 }
 
+/** Backfills collections added after a visitor's snapshot was written. */
+function normalise(data: DemoDb): DemoDb {
+  data.outbox = data.outbox ?? []
+  data.reviews = data.reviews ?? []
+  data.notifications = data.notifications ?? []
+  return data
+}
+
 function build(): DemoDb {
   const next = (() => {
     let n = 0
@@ -199,6 +222,7 @@ function build(): DemoDb {
     notifications: [],
     faqs: [],
     tickets: [],
+    outbox: [],
     config: {
       maintenance_mode: false,
       maintenance_message: 'System undergoing maintenance. New orders are temporarily paused.',
@@ -460,7 +484,7 @@ export function getDb(): DemoDb {
   try {
     const raw = localStorage.getItem(DB_KEY)
     if (raw) {
-      db = JSON.parse(raw) as DemoDb
+      db = normalise(JSON.parse(raw) as DemoDb)
       return db
     }
   } catch {

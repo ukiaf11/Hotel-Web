@@ -44,9 +44,14 @@ export function Footer() {
                   Running in demo mode — every hotel, order and account lives in your browser, so you can
                   change anything safely.
                 </p>
-                <button className="btn btn-ghost btn-sm" onClick={resetDemo}>
-                  <Icon name="refresh" size={13} /> Reset demo data
-                </button>
+                <div className="row wrap" style={{ gap: 'var(--space-2)' }}>
+                  <Link className="btn btn-ghost btn-sm" to="/outbox">
+                    <Icon name="message" size={13} /> Order email outbox
+                  </Link>
+                  <button className="btn btn-ghost btn-sm" onClick={resetDemo}>
+                    <Icon name="refresh" size={13} /> Reset demo data
+                  </button>
+                </div>
               </div>
             ) : null}
           </div>

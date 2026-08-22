@@ -1,0 +1,43 @@
+{% extends "email/_base.html" %}
+
+{% block title %}Order #{{ order.id }} confirmed{% endblock %}
+{% block header_tag %}Order confirmed{% endblock %}
+{% block preheader %}{{ hotel.name }} has your order for {{ order.scheduled_slot }}.{% endblock %}
+
+{% block content %}
+  <h1 style="margin:0 0 4px;font-size:21px;">Order #{{ order.id }} confirmed</h1>
+  <p style="margin:0 0 18px;color:#7b8296;font-size:14px;">
+    Thanks {{ buyer.name }} — {{ hotel.name }} has received your order and will confirm it shortly.
+  </p>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef7f0;border-radius:10px;margin-bottom:20px;">
+    <tr>
+      <td style="padding:14px 16px;font-size:14px;line-height:1.7;">
+        <strong style="display:block;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:#2f7d4b;margin-bottom:5px;">{{ fulfilment }}</strong>
+        {{ order.scheduled_date|date:"l j F Y" }} &middot; {{ order.scheduled_slot }}<br />
+        {% if is_delivery %}Delivering to {{ order.address }}{% else %}Collect from {{ hotel.place|default:hotel.name }}{% endif %}
+      </td>
+    </tr>
+  </table>
+
+  <h2 style="margin:0 0 4px;font-size:15px;">Your order</h2>
+  {% include "email/_items.html" %}
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6fa;border-radius:10px;margin-top:20px;">
+    <tr><td style="padding:13px 16px;font-size:13px;line-height:1.6;">
+      <strong style="display:block;margin-bottom:3px;">Payment — offline only</strong>
+      {% if is_delivery %}Please have {{ currency }}{{ order.total_amount|floatformat:2 }} ready in cash for the courier.{% else %}Please pay {{ currency }}{{ order.total_amount|floatformat:2 }} at the counter when you collect.{% endif %}
+    </td></tr>
+  </table>
+
+  <p style="margin:24px 0 0;">
+    <a href="{{ track_url }}" style="display:inline-block;background:#e8890f;color:#ffffff;font-weight:600;font-size:14px;text-decoration:none;padding:12px 24px;border-radius:9px;">Track your order</a>
+  </p>
+
+  <p style="margin:18px 0 0;font-size:13px;line-height:1.7;color:#7b8296;">
+    {{ hotel.name }}{% if hotel.contact_number %} &middot; <a href="tel:{{ hotel.contact_number }}" style="color:#c9761a;text-decoration:none;">{{ hotel.contact_number }}</a>{% endif %}
+    {% if hotel_map_url %}<br /><a href="{{ hotel_map_url }}" style="color:#c9761a;text-decoration:none;">Directions to the hotel &rarr;</a>{% endif %}
+  </p>
+{% endblock %}
+
+{% block footer %}Need help? Reply to this email to reach {{ hotel.name }} directly.{% endblock %}

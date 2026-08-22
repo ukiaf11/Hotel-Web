@@ -66,13 +66,25 @@ Everything below has since been built and verified.
 - [x] GitHub Actions CI — backend tests, migration check, deploy check, frontend lint/build, Docker build
 - [x] `vercel.json`, production build, deployed live to <https://ukiaf11.github.io/Hotel-Web/>
 
+## Post-launch additions
+
+- [x] **Order notification email** — distributor kitchen ticket (food list + customer details)
+      and customer confirmation, HTML + plain text, sent on order creation
+- [x] Django: SMTP via env config, Celery task, `transaction.on_commit`, console backend fallback,
+      three independent toggles, failure isolated from order creation
+- [x] Demo backend: identical messages via EmailJS when configured, otherwise recorded to an
+      in-app outbox at `/outbox`
+- [x] 12 email tests covering content, routing, reply-to, toggles and a dead SMTP server
+
 ## Verification performed
 
 | Check | Result |
 |---|---|
-| Django integration tests | 33 passed |
+| Django integration tests | 45 passed |
 | `manage.py check --deploy` | no issues |
 | Demo backend API suite (headless) | 40 assertions passed |
 | Every route rendered in jsdom for anonymous, customer, distributor, cook and admin | all passed |
 | `npm run lint` / `tsc -b` / `vite build` | clean |
 | Generated invoice PDF parsed with `pdftotext` | valid |
+| Headless-Chrome UI suite (modal focus, card layout) | 11 passed |
+| Order email placed end-to-end in a real browser | 15 passed |

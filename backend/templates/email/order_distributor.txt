@@ -1,0 +1,33 @@
+{% autoescape off %}NEW ORDER #{{ order.id }} - {{ hotel.name }}
+==================================================
+
+Placed:      {{ placed_at|date:"D j M Y, g:i A" }}
+Scheduled:   {{ order.scheduled_date|date:"D j M Y" }} at {{ order.scheduled_slot }}
+Fulfilment:  {{ fulfilment }}
+
+CUSTOMER
+--------------------------------------------------
+Name:     {{ buyer.name }}
+Phone:    {{ buyer.phone_number|default:"not provided" }}
+Email:    {{ buyer.email }}
+{% if is_delivery %}Address:  {{ order.address }}{% if customer_map_url %}
+Map:      {{ customer_map_url }}{% endif %}{% else %}Pickup:   customer collects at the counter{% endif %}
+
+FOOD LIST
+--------------------------------------------------
+{% for item in items %}{{ item.quantity }} x {{ item.name }} - {{ currency }}{{ item.line_total|floatformat:2 }} ({{ currency }}{{ item.unit_price|floatformat:2 }} each)
+{% endfor %}
+Subtotal:      {{ currency }}{{ order.subtotal|floatformat:2 }}
+Delivery fee:  {{ currency }}{{ order.delivery_fee|floatformat:2 }}
+Tax:           {{ currency }}{{ order.tax_amount|floatformat:2 }}
+TOTAL:         {{ currency }}{{ order.total_amount|floatformat:2 }} - collect offline
+{% if order.special_instructions %}
+CUSTOMER NOTE
+--------------------------------------------------
+{{ order.special_instructions }}
+{% endif %}
+Accept or reject this order in your queue:
+{{ queue_url }}
+
+You are receiving this because you own {{ hotel.name }} on Hotel Express.
+{% endautoescape %}

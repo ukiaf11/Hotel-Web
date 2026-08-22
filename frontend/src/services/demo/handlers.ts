@@ -17,6 +17,7 @@ import {
   type DemoOrder,
   type DemoUser,
 } from './db'
+import { EMAILJS_CONFIGURED, sendOrderEmails } from './email'
 import { PAGE, PdfDoc } from './pdf'
 
 const PAGE_SIZE = 6
@@ -736,6 +737,26 @@ on('POST', '/orders/create/', ({ token, body }) => {
 
   notify(hotel.ownerId, 'New order received', `Order #${order.id} has been placed for ${order.scheduled_slot}.`, 'order', '/distributor/orders')
   notify(user.id, 'Order placed', `Order #${order.id} at ${hotel.name} is awaiting confirmation.`, 'order', `/orders/track/${order.id}`)
+
+  // Kitchen ticket to the distributor plus a confirmation to the buyer. Fire and
+  // forget: mail must never be able to fail an order that is already placed.
+  const owner = db.users.find((entry) => entry.id === hotel.ownerId)
+  if (owner) {
+    void sendOrderEmails(order, hotel, owner, user)
+      .then((messages) => {
+        messages.forEach((message) => db.outbox.unshift({ id: nextId(), ...message }))
+        notify(
+          hotel.ownerId,
+          'Order email sent',
+          `The ticket for order #${order.id} was sent to ${owner.email}.`,
+          'system',
+          '/outbox',
+        )
+        save()
+      })
+      .catch(() => undefined)
+  }
+
   save()
 
   return {
@@ -1486,6 +1507,27 @@ on('PUT', '/admin/settings/', ({ token, body }) => {
   save()
   return db.config
 })
+
+on('GET', '/outbox/', ({ token }) => {
+  const user = requireUser(token)
+  const db = getDb()
+  const hotel = db.hotels.find((entry) => entry.ownerId === user.id || entry.id === user.hotelId)
+
+  // Scoped to orders you are a party to: both messages for an order you placed, and
+  // both for an order your hotel received. Mail for unrelated orders stays hidden.
+  const isMine = (orderId: number) => {
+    const order = db.orders.find((entry) => entry.id === orderId)
+    if (!order) return false
+    return order.buyerId === user.id || (hotel ? order.hotelId === hotel.id : false)
+  }
+
+  return db.outbox.filter((message) => message.to === user.email || isMine(message.orderId))
+})
+
+on('GET', '/outbox/status/', () => ({
+  configured: EMAILJS_CONFIGURED,
+  provider: EMAILJS_CONFIGURED ? 'emailjs' : 'demo-outbox',
+}))
 
 on('GET', '/public/config/', () => getDb().config)
 on('GET', '/health/', () => ({ status: 'ok', mode: 'demo' }))
