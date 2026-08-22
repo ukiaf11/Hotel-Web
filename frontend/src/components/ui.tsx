@@ -316,12 +316,22 @@ interface ModalProps {
 
 export function Modal({ open, onClose, title, subtitle, children, wide }: ModalProps) {
   const cardRef = useRef<HTMLDivElement>(null)
+  const closeRef = useRef(onClose)
   const titleId = useId()
 
+  // Callers pass an inline arrow, so `onClose` is a new function on every render.
+  // Keeping the latest one in a ref lets the effect below depend on `open` alone.
+  useEffect(() => {
+    closeRef.current = onClose
+  })
+
+  // Runs only when the dialog opens. It must not re-run on every render: it moves
+  // focus to the dialog, which would otherwise pull the caret out of an input after
+  // each keystroke.
   useEffect(() => {
     if (!open) return
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key === 'Escape') closeRef.current()
     }
     document.addEventListener('keydown', onKey)
     const previous = document.body.style.overflow
@@ -331,7 +341,7 @@ export function Modal({ open, onClose, title, subtitle, children, wide }: ModalP
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = previous
     }
-  }, [open, onClose])
+  }, [open])
 
   if (!open) return null
   return (
